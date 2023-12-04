@@ -1,0 +1,14 @@
+*__pycache__
+tmp*
+.jpg*
+.png*
+.mp4*
+.txt*
+.csv*
+2023*
+data/*
+event/*
+images/*
+plot/*
+value/*
+combine/*
