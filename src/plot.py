@@ -2,6 +2,7 @@ import os
 from typing import List
 
 import matplotlib.pyplot as plt
+import pandas as pd
 import numpy as np
 
 
@@ -46,7 +47,6 @@ class PlotEEG:
         xlabel="",
         ylabel="",
         linewidth=0.5,
-        minima_indices=[]
     ):
         axis.set_title(title, fontsize=fontsize)
         axis.grid(which="both", axis="both", linestyle="--")
@@ -55,9 +55,6 @@ class PlotEEG:
         axis.set_ylabel(ylabel, fontsize=labelsize + 1)
         axis.autoscale(tight=True)
         axis.plot(x, y, color=color, zorder=1, linewidth=linewidth)
-        
-        for i in minima_indices:
-            axis.axvline(x=x[i], color="b", linestyle="--", linewidth=1)
 
     def plot_points(self, axis, values, indices):
         axis.scatter(x=indices, y=values[indices], c="black", s=50, zorder=2)
@@ -101,35 +98,6 @@ class PlotEEG:
         filename: str,
     ):
         for i in range(len(avg_evoked)):  # For electrode
-            
-            times = np.array(times)
-            
-            # Find the indices where times are between 0 and 1
-            valid_indices = np.where((times >= 0) & (times <= 0.4))[0]
-            print('valid_indices:')
-            print(valid_indices)
-
-            evoked = avg_evoked[i]
-            
-            min_idx=np.argmin(evoked[valid_indices])
-            print('min_idx :')
-            print(min_idx)
-            max_idx=np.argmax(evoked[valid_indices])
-            print('max_idx :')
-            print(max_idx)
-            #min_idx = valid_indices[np.argmin(evoked[valid_indices])]
-            #max_idx = valid_indices[np.argmax(evoked[valid_indices])]
-            min_idx = np.argmin(evoked[valid_indices])
-            max_idx = np.argmax(evoked[valid_indices])
-            
-            #min_idx = np.array(min_idx)
-            #max_idx = np.array(max_idx)
-            
-            avg_idx = np.sum(min_idx,max_idx)//2
-            print(avg_idx)
-            
-            
-            
             fig, axarr = self.init_plots(1, is_line=True)
             self.plot_data(
                 axis=axarr,
@@ -143,10 +111,7 @@ class PlotEEG:
                 + " channels) - "
                 + self.channels[i]
                 + " Electrode",
-                minima_indices=avg_idx
             )
-            
-            
             if self.is_save:
                 if not os.path.exists(self.result_dir):
                     os.makedirs(self.result_dir)
@@ -157,3 +122,20 @@ class PlotEEG:
             if self.is_show:
                 self.show_plot()
             self.clean_plot()
+
+
+def plot_ssvep(
+    df: pd.DataFrame,
+    save_path: str,
+    figsize: tuple = (15,8),
+):
+    plt.figure(figsize=figsize)
+    for freq, values in df.items():
+        plt.plot(df.index, values, label=f"Average around {freq}")
+    
+    plt.xlabel("Time")
+    plt.ylabel("Average FFT Values")
+    plt.title("Average FFT Values over Time for Selected Frequencies")
+    plt.legend()
+    plt.xticks(rotation=45)
+    plt.savefig(save_path)
